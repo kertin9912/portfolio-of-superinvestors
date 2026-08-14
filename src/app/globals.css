@@ -1,0 +1,24 @@
+:root {
+  --black: #000;
+  --white: #fff;
+  --paper: #f3f4ef;
+  --line: #b3b3b3;
+  --muted: #767676;
+  --up: #338736;
+  --down: #e51503;
+  --yellow: #ffcd1e;
+}
+
+* { box-sizing: border-box; padding: 0; margin: 0; }
+html { scroll-behavior: smooth; background: #fff; }
+body {
+  color: #000;
+  background: #fff;
+  font-family: var(--font-geist-sans), "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+a { color: inherit; text-decoration: none; }
+table { font-variant-numeric: tabular-nums; }
+::selection { background: #ffcd1e; color: #000; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
