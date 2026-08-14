@@ -1,6 +1,6 @@
-# Signal 13F
+# Portfolio of Superinvestors
 
-A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
+A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and configured for deployment on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
 
 ## Routes
 
@@ -16,7 +16,7 @@ The server fetches each manager's official `data.sec.gov/submissions/CIK########
 Set a descriptive SEC user agent with a monitored contact address before production:
 
 ```bash
-SEC_USER_AGENT="Signal13F admin@example.com"
+SEC_USER_AGENT="PortfolioOfSuperinvestors admin@example.com"
 ```
 
 ## Local development
