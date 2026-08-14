@@ -1,6 +1,10 @@
 # Portfolio of Superinvestors
 
-A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and configured for deployment on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
+A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
+
+## Live deployment
+
+[portfolio-of-superinvestors.kkertin1214.workers.dev](https://portfolio-of-superinvestors.kkertin1214.workers.dev)
 
 ## Routes
 
@@ -45,4 +49,4 @@ npm run preview
 npm run deploy
 ```
 
-Authenticate Wrangler and set the production `SEC_USER_AGENT` secret before deployment. The generated Bloomberg reference system from dembrandt is saved at `output/bloomberg.com/DESIGN.md`.
+The production Worker is named `portfolio-of-superinvestors`. Set `SEC_USER_AGENT` as a Wrangler secret rather than committing a contact email. The generated Bloomberg reference system from dembrandt is saved at `output/bloomberg.com/DESIGN.md`.

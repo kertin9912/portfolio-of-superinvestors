@@ -1,8 +1,8 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "signal-13f",
+  "name": "portfolio-of-superinvestors",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2026-08-15",
+  "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
