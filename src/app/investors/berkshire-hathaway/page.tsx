@@ -22,7 +22,7 @@ function TerminalHeader() {
   return (
     <>
       <div className={styles.blackBar}>
-        <Link href="/" className={styles.brand}>SIGNAL<span>13F</span></Link>
+        <Link href="/" className={styles.brand}>PoS</Link>
         <span>INSTITUTIONAL HOLDINGS INTELLIGENCE</span>
         <div className={styles.live}><i /> SEC EDGAR LIVE</div>
       </div>
@@ -88,7 +88,7 @@ export default async function BerkshirePage() {
               {positions.slice(0, 8).map((position, index) => (
                 <li key={`${position.cusip}:${position.titleOfClass}`}>
                   <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div><b>{position.issuer}</b><small>{position.titleOfClass} · {position.cusip}</small></div>
+                  <div><b>{position.issuer}</b></div>
                   <div className={styles.bar}><i style={{ width: `${Math.min((position.weight / positions[0].weight) * 100, 100)}%` }} /></div>
                   <strong>{position.weight.toFixed(2)}%</strong>
                   <em>{formatMoney(position.value)}</em>
@@ -119,7 +119,7 @@ export default async function BerkshirePage() {
         </div>
 
         <section className={styles.sourcePanel} id="source">
-          <div><span>DATA CONTROL / SOURCE VERIFIED</span><h2>Official SEC filing record</h2><p>Positions are parsed from the filing&apos;s public XML information table and aggregated by CUSIP plus security class. Activity compares reported share counts with the immediately preceding reporting period. No mock positions, inferred tickers, or estimated market prices are used.</p></div>
+          <div><span>DATA CONTROL / SOURCE VERIFIED</span><h2>Official SEC filing record</h2><p>Positions are parsed from the filing&apos;s public XML information table and normalized by security identity. Activity compares reported share counts with the immediately preceding reporting period. No mock positions, inferred tickers, or estimated market prices are used.</p></div>
           <dl>
             <div><dt>SEC ACCEPTED</dt><dd>{current.filing.acceptanceDateTime}</dd></div>
             <div><dt>REPORT DATE</dt><dd>{current.filing.reportDate}</dd></div>

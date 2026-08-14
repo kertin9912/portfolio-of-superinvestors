@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import { formatMoney, getManagerDashboard } from "@/lib/sec";
+import { formatMoney, getManagerDashboard, managers } from "@/lib/sec";
 
 export const revalidate = 60;
 
@@ -15,7 +15,7 @@ function TerminalHeader() {
   return (
     <>
       <div className={styles.blackBar}>
-        <Link href="/" className={styles.brand}>SIGNAL<span>13F</span></Link>
+        <Link href="/" className={styles.brand}>PoS</Link>
         <span>INSTITUTIONAL HOLDINGS INTELLIGENCE</span>
         <div className={styles.live}><i /> SEC EDGAR LIVE</div>
       </div>
@@ -30,6 +30,7 @@ function TerminalHeader() {
 
 export default async function Home() {
   const dashboard = await getManagerDashboard();
+  const displayNames = new Map<string, string>(managers.map((manager) => [manager.cik, manager.displayName]));
   const available = dashboard.flatMap((item) => item.portfolio ? [item.portfolio] : []);
   const sortedFilings = [...available].sort((left, right) => right.filing.acceptanceDateTime.localeCompare(left.filing.acceptanceDateTime));
   const totalValue = available.reduce((sum, portfolio) => sum + portfolio.totalValue, 0);
@@ -44,7 +45,7 @@ export default async function Home() {
       <TerminalHeader />
       <div className={styles.tape}>
         {available.map((portfolio) => (
-          <span key={portfolio.cik}><b>{portfolio.managerName.replaceAll(" MANAGEMENT", "").slice(0, 18)}</b> {formatMoney(portfolio.totalValue)} <i>{portfolio.positions.length} POS</i></span>
+          <span key={portfolio.cik}><b>{displayNames.get(portfolio.cik) ?? portfolio.managerName}</b> {formatMoney(portfolio.totalValue)} <i>{portfolio.positions.length} POS</i></span>
         ))}
       </div>
 
@@ -70,7 +71,7 @@ export default async function Home() {
                 <tbody>
                   {[...dashboard].sort((left, right) => (right.portfolio?.totalValue ?? -1) - (left.portfolio?.totalValue ?? -1)).map((item) => (
                     <tr key={item.config.cik}>
-                      <td>{item.config.slug === "berkshire-hathaway" ? <Link href="/investors/berkshire-hathaway">{item.portfolio?.managerName ?? item.config.displayName}</Link> : <b>{item.portfolio?.managerName ?? item.config.displayName}</b>}</td>
+                      <td>{item.config.slug === "berkshire-hathaway" ? <Link href="/investors/berkshire-hathaway">{item.config.displayName}</Link> : <b>{item.config.displayName}</b>}</td>
                       <td>{item.config.cik}</td><td>{item.portfolio?.filing.reportDate ?? "ERROR"}</td><td><span className={styles.form}>{item.portfolio?.filing.form ?? "—"}</span></td>
                       <td>{item.portfolio?.positions.length ?? "—"}</td><td><b>{item.portfolio ? formatMoney(item.portfolio.totalValue) : "UNAVAILABLE"}</b></td>
                       <td>{item.portfolio ? formatAccepted(item.portfolio.filing.acceptanceDateTime) : item.error?.slice(0, 30)}</td>
@@ -79,7 +80,7 @@ export default async function Home() {
                 </tbody>
               </table>
             </div>
-            <p className={styles.sourceNote}>SOURCE: SEC EDGAR FORM 13F INFORMATION TABLES · VALUES AGGREGATED BY CUSIP AND SECURITY CLASS</p>
+            <p className={styles.sourceNote}>SOURCE: SEC EDGAR FORM 13F INFORMATION TABLES · OFFICIAL DISCLOSED VALUES</p>
           </section>
 
           <aside className={styles.panel} id="filings">
@@ -88,7 +89,7 @@ export default async function Home() {
               {sortedFilings.map((portfolio, index) => (
                 <li key={portfolio.cik}>
                   <time>{formatAccepted(portfolio.filing.acceptanceDateTime)}</time>
-                  <div><span>{String(index + 1).padStart(2, "0")}</span><p><b>{portfolio.managerName}</b><small>{portfolio.filing.form} · {portfolio.filing.accessionNumber}</small></p></div>
+                  <div><span>{String(index + 1).padStart(2, "0")}</span><p><b>{displayNames.get(portfolio.cik) ?? portfolio.managerName}</b><small>{portfolio.filing.form} · {portfolio.filing.accessionNumber}</small></p></div>
                   <strong>{formatMoney(portfolio.totalValue)}</strong>
                 </li>
               ))}
@@ -104,11 +105,11 @@ export default async function Home() {
             </div>
             <div className={styles.tableScroll}>
               <table className={styles.holdingsTable}>
-                <thead><tr><th>#</th><th>ISSUER</th><th>CLASS</th><th>CUSIP</th><th>PORTFOLIO WEIGHT</th><th>SHARES / PRN</th><th>DISCLOSED VALUE</th></tr></thead>
+                <thead><tr><th>#</th><th>ISSUER</th><th>PORTFOLIO WEIGHT</th><th>SHARES / PRN</th><th>DISCLOSED VALUE</th></tr></thead>
                 <tbody>
                   {berkshire.positions.slice(0, 12).map((position, index) => (
                     <tr key={`${position.cusip}:${position.titleOfClass}`}>
-                      <td>{String(index + 1).padStart(2, "0")}</td><td><b>{position.issuer}</b></td><td>{position.titleOfClass}</td><td>{position.cusip}</td>
+                      <td>{String(index + 1).padStart(2, "0")}</td><td><b>{position.issuer}</b></td>
                       <td><div className={styles.weightCell}><span style={{ width: `${Math.min(position.weight * 3.5, 100)}%` }} /><b>{position.weight.toFixed(2)}%</b></div></td>
                       <td>{Math.round(position.shares).toLocaleString("en-US")}</td><td><b>{formatMoney(position.value)}</b></td>
                     </tr>
@@ -121,7 +122,7 @@ export default async function Home() {
 
         <section className={styles.methodology} id="methodology">
           <div><span>DATA CONTROL</span><h2>Source & Methodology</h2></div>
-          <p>All portfolio figures on this page are parsed directly from the latest public SEC 13F information-table XML for each manager. Duplicate manager rows are aggregated by CUSIP and security class. No estimated positions, market-price enrichment, or synthetic data is included.</p>
+          <p>All portfolio figures on this page are parsed directly from the latest public SEC 13F information-table XML for each manager. Filing rows are normalized and aggregated by security identity. No estimated positions, market-price enrichment, or synthetic data is included.</p>
           <div className={styles.statusBox}><i /> <span>SEC DATA PIPELINE</span><b>OPERATIONAL</b></div>
         </section>
       </div>

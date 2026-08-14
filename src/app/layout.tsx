@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Signal 13F | Institutional Holdings Intelligence",
-  description: "Live institutional holdings parsed directly from SEC Form 13F filings.",
+  title: "PoS | Institutional Holdings Intelligence",
+  description: "PoS tracks live superinvestor holdings parsed directly from SEC Form 13F filings.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

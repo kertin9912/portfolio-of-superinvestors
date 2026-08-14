@@ -6,13 +6,12 @@ const SEC_DATA = "https://data.sec.gov";
 const REVALIDATE_SECONDS = 60;
 
 export const managers = [
-  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway" },
-  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square" },
-  { slug: "scion-asset-management", cik: "0001649339", displayName: "Scion Asset Management" },
+  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "BERKSHIRE HATHAWAY" },
+  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management" },
   { slug: "bridgewater-associates", cik: "0001350694", displayName: "Bridgewater Associates" },
-  { slug: "soros-fund-management", cik: "0001029160", displayName: "Soros Fund Management" },
-  { slug: "duquesne-family-office", cik: "0001536411", displayName: "Duquesne Family Office" },
-  { slug: "tiger-global", cik: "0001167483", displayName: "Tiger Global Management" },
+  { slug: "tiger-global", cik: "0001167483", displayName: "TIGER GLOBAL LLC" },
+  { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping - H&H International Investment" },
+  { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu - Himalaya Capital Management" },
 ] as const;
 
 type JsonRecord = Record<string, unknown>;
@@ -81,7 +80,7 @@ function secHeaders(): HeadersInit {
   return {
     Accept: "application/json, application/xml, text/xml;q=0.9, */*;q=0.8",
     "Accept-Encoding": "gzip, deflate",
-    "User-Agent": process.env.SEC_USER_AGENT ?? "Signal13F local-research contact@example.invalid",
+    "User-Agent": process.env.SEC_USER_AGENT ?? "PoS local-research contact@example.invalid",
   };
 }
 

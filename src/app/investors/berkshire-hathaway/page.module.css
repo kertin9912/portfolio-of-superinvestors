@@ -1,6 +1,5 @@
 .blackBar { height: 40px; padding: 0 20px; background: #000; color: #fff; display: flex; align-items: center; gap: 28px; font: 700 10px/1 var(--font-geist-mono); letter-spacing: .08em; }
-.brand { font: 900 21px/1 var(--font-geist-sans); letter-spacing: -.06em; }
-.brand span { color: #ffcd1e; }
+.brand { font: 900 22px/1 var(--font-geist-sans); letter-spacing: -.06em; }
 .live { margin-left: auto; display: flex; align-items: center; gap: 7px; }
 .live i, .contextStatus i { width: 7px; height: 7px; border-radius: 50%; background: #4db250; display: inline-block; }
 .nav { height: 34px; padding: 0 20px; display: flex; align-items: stretch; border-bottom: 1px solid #000; background: #fff; }
@@ -65,7 +64,7 @@
 .filters .activeFilter { background: #000; color: #fff; }
 .filters > span { margin-left: auto; font: 9px/1 var(--font-geist-mono); }
 .tableWrap { overflow-x: auto; }
-.tableWrap table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+.tableWrap table { width: 100%; min-width: 850px; border-collapse: collapse; }
 .tableWrap th { height: 31px; padding: 0 8px; border-bottom: 1px solid #000; text-align: left; background: #f3f4ef; font: 700 8px/1 var(--font-geist-mono); letter-spacing: .04em; white-space: nowrap; }
 .tableWrap th:first-child, .tableWrap td:first-child { padding-left: 0; }
 .tableWrap td { height: 43px; padding: 0 8px; border-bottom: 1px solid #ccc; font: 9px/1 var(--font-geist-mono); white-space: nowrap; }
@@ -97,6 +96,7 @@
 
 @media (max-width: 620px) {
   .blackBar > span, .contextBar span:nth-child(2), .contextBar span:nth-child(3), .nav a:nth-child(n + 4) { display: none; }
+  .brand { font-size: 20px; }
   .nav, .blackBar, .contextBar { padding-left: 10px; padding-right: 10px; }
   .nav a { padding: 0 11px; }
   .shell { padding-left: 10px; padding-right: 10px; }

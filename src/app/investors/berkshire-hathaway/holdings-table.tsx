@@ -39,7 +39,7 @@ export function HoldingsTable({ positions, sold }: { positions: PositionChange[]
   const rows = useMemo(() => {
     const allRows: Row[] = [...positions, ...sold];
     return allRows.filter((position) => {
-      const haystack = `${position.issuer} ${position.cusip} ${position.titleOfClass}`.toLowerCase();
+      const haystack = position.issuer.toLowerCase();
       return haystack.includes(deferredQuery) && (filter === "ALL" || position.activity === filter);
     });
   }, [deferredQuery, filter, positions, sold]);
@@ -49,9 +49,9 @@ export function HoldingsTable({ positions, sold }: { positions: PositionChange[]
       <div className={styles.tableHeader}>
         <div><span>TABLE 02 / COMPLETE INFORMATION TABLE</span><h2>Reported Holdings</h2></div>
         <label className={styles.search}>
-          <span className="sr-only">Search issuer, CUSIP, or class</span>
+          <span className="sr-only">Search issuer</span>
           <span aria-hidden="true">⌕</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="SEARCH ISSUER / CUSIP / CLASS" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="SEARCH ISSUER" />
         </label>
       </div>
       <div className={styles.filters}>
@@ -62,14 +62,12 @@ export function HoldingsTable({ positions, sold }: { positions: PositionChange[]
       </div>
       <div className={styles.tableWrap}>
         <table>
-          <thead><tr><th>#</th><th>ISSUER</th><th>CLASS</th><th>CUSIP</th><th>WEIGHT</th><th>SHARES / PRN</th><th>DISCLOSED VALUE</th><th>ACTIVITY</th><th>Q/Q SHARES</th></tr></thead>
+          <thead><tr><th>#</th><th>ISSUER</th><th>WEIGHT</th><th>SHARES / PRN</th><th>DISCLOSED VALUE</th><th>ACTIVITY</th><th>Q/Q SHARES</th></tr></thead>
           <tbody>
             {rows.map((position, index) => (
               <tr key={`${position.cusip}:${position.titleOfClass}:${position.activity}`}>
                 <td>{String(index + 1).padStart(2, "0")}</td>
                 <td><b>{position.issuer}</b></td>
-                <td>{position.titleOfClass}</td>
-                <td>{position.cusip}</td>
                 <td><div className={styles.weight}><i style={{ width: `${Math.min(position.weight * 3.5, 100)}%` }} /><span>{position.weight.toFixed(2)}%</span></div></td>
                 <td>{number(position.shares)}</td>
                 <td><b>{money(position.value)}</b></td>

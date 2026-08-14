@@ -1,6 +1,6 @@
-# Portfolio of Superinvestors
+# PoS
 
-A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
+PoS (short for Portfolio of Superinvestors) is a Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
 
 ## Live deployment
 
@@ -11,6 +11,15 @@ A Bloomberg-inspired institutional holdings monitor built with Next.js 16 and de
 - `/` — live reporting-manager dashboard, latest filings, and Berkshire top holdings
 - `/investors/berkshire-hathaway` — current Berkshire portfolio, quarter-over-quarter activity, searchable information table, and original SEC source
 
+## Tracked managers
+
+- Berkshire Hathaway
+- Pershing Square Capital Management
+- Bridgewater Associates
+- Tiger Global
+- Duan Yongping - H&H International Investment
+- Li Lu - Himalaya Capital Management
+
 ## Data pipeline
 
 The server fetches each manager's official `data.sec.gov/submissions/CIK##########.json`, resolves the latest `13F-HR` or `13F-HR/A`, locates the filing information-table XML, parses it, and aggregates duplicate rows by CUSIP and security class. Next.js revalidates SEC responses every 60 seconds.
@@ -20,7 +29,7 @@ The server fetches each manager's official `data.sec.gov/submissions/CIK########
 Set a descriptive SEC user agent with a monitored contact address before production:
 
 ```bash
-SEC_USER_AGENT="PortfolioOfSuperinvestors admin@example.com"
+SEC_USER_AGENT="PoS admin@example.com"
 ```
 
 ## Local development
