@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { ManagerDirectory, type ManagerDirectoryItem } from "./manager-directory";
 import { formatMoney, getManagerDashboard } from "@/lib/sec";
 
 export const revalidate = 60;
@@ -33,6 +34,22 @@ export default async function Home() {
   const available = dashboard.flatMap((item) => item.portfolio ? [item.portfolio] : []);
   const totalValue = available.reduce((sum, portfolio) => sum + portfolio.totalValue, 0);
   const sorted = dashboard.toSorted((left, right) => (right.portfolio?.totalValue ?? -1) - (left.portfolio?.totalValue ?? -1));
+  const directoryItems: ManagerDirectoryItem[] = sorted.map((item) => ({
+    cik: item.config.cik,
+    slug: item.config.slug,
+    displayName: item.config.displayName,
+    profileLine: item.config.profileLine,
+    searchText: `${item.config.displayName} ${item.config.aliases.join(" ")}`,
+    initials: [item.config.displayName, ...item.config.aliases]
+      .map((name) => name.trim().charAt(0).toUpperCase())
+      .join(""),
+    available: item.portfolio !== null,
+    totalValue: item.portfolio ? formatMoney(item.portfolio.totalValue) : "—",
+    positionCount: item.portfolio?.positions.length ?? null,
+    reportDate: item.portfolio?.filing.reportDate ?? null,
+    filedAt: item.portfolio ? formatAccepted(item.portfolio.filing.acceptanceDateTime) : null,
+    error: item.error?.slice(0, 52) ?? null,
+  }));
 
   return (
     <main>
@@ -50,23 +67,7 @@ export default async function Home() {
           <div className={styles.marketTotal}><span>AGGREGATE DISCLOSED VALUE</span><b>{formatMoney(totalValue)}</b><small>LATEST PUBLIC SEC FILINGS</small></div>
         </header>
 
-        <section className={styles.managerGrid} id="coverage" aria-label="Tracked investment managers">
-          {sorted.map((item, index) => (
-            <article className={styles.managerCard} key={item.config.cik}>
-              <div className={styles.cardIndex}>{String(index + 1).padStart(2, "0")}</div>
-              <div className={styles.cardStatus}><i className={item.portfolio ? styles.online : styles.offline} /> {item.portfolio ? "LIVE" : "UNAVAILABLE"}</div>
-              <p>CIK {item.config.cik}</p>
-              <h2>{item.config.displayName}</h2>
-              <strong>{item.portfolio ? formatMoney(item.portfolio.totalValue) : "—"}</strong>
-              <dl>
-                <div><dt>POSITIONS</dt><dd>{item.portfolio?.positions.length ?? "—"}</dd></div>
-                <div><dt>REPORTING PERIOD</dt><dd>{item.portfolio?.filing.reportDate ?? "—"}</dd></div>
-                <div><dt>FILED</dt><dd>{item.portfolio ? formatAccepted(item.portfolio.filing.acceptanceDateTime) : "—"}</dd></div>
-              </dl>
-              {item.portfolio ? <Link href={`/investors/${item.config.slug}`}>VIEW HOLDINGS <span>→</span></Link> : <span className={styles.error}>{item.error?.slice(0, 52)}</span>}
-            </article>
-          ))}
-        </section>
+        <ManagerDirectory items={directoryItems} />
 
         <footer className={styles.dataNote}>
           <span>DATA CONTROL / SEC VERIFIED</span>

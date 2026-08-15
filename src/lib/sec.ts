@@ -6,13 +6,18 @@ const SEC_DATA = "https://data.sec.gov";
 const REVALIDATE_SECONDS = 60;
 
 export const managers = [
-  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway", profileLine: "Warren E. Buffett · Omaha, Nebraska" },
-  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management", profileLine: "Bill Ackman · New York, New York" },
-  { slug: "bridgewater-associates", cik: "0001350694", displayName: "Bridgewater Associates", profileLine: "Westport, Connecticut" },
-  { slug: "tiger-global", cik: "0001167483", displayName: "Tiger Global Management", profileLine: "Chase Coleman · New York, New York" },
-  { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping · H&H International Investment", profileLine: "Duan Yongping · Palo Alto, California" },
-  { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu · Himalaya Capital Management", profileLine: "Li Lu · Seattle, Washington" },
-  { slug: "situational-awareness", cik: "0002045724", displayName: "Leopold Aschenbrenner · Situational Awareness LP", profileLine: "Leopold Aschenbrenner · San Francisco, California" },
+  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway", profileLine: "Warren E. Buffett · Omaha, Nebraska", aliases: ["Warren Buffett"] },
+  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management", profileLine: "Bill Ackman · New York, New York", aliases: ["Bill Ackman"] },
+  { slug: "bridgewater-associates", cik: "0001350694", displayName: "Bridgewater Associates", profileLine: "Ray Dalio · Westport, Connecticut", aliases: ["Ray Dalio"] },
+  { slug: "tiger-global", cik: "0001167483", displayName: "Tiger Global Management", profileLine: "Chase Coleman · New York, New York", aliases: ["Chase Coleman"] },
+  { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping · H&H International Investment", profileLine: "Duan Yongping · Palo Alto, California", aliases: ["Duan Yongping"] },
+  { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu · Himalaya Capital Management", profileLine: "Li Lu · Seattle, Washington", aliases: ["Li Lu"] },
+  { slug: "situational-awareness", cik: "0002045724", displayName: "Leopold Aschenbrenner · Situational Awareness LP", profileLine: "Leopold Aschenbrenner · San Francisco, California", aliases: ["Leopold Aschenbrenner"] },
+  { slug: "baupost-group", cik: "0001061768", displayName: "Baupost Group", profileLine: "Seth Klarman · Boston, Massachusetts", aliases: ["Seth Klarman"] },
+  { slug: "fundsmith", cik: "0001569205", displayName: "Fundsmith LLP", profileLine: "Terry Smith · London, United Kingdom", aliases: ["Terry Smith"] },
+  { slug: "appaloosa", cik: "0001656456", displayName: "Appaloosa LP", profileLine: "David Tepper · Short Hills, New Jersey", aliases: ["David Tepper"] },
+  { slug: "akre-capital-management", cik: "0001112520", displayName: "Akre Capital Management", profileLine: "Chuck Akre · Middleburg, Virginia", aliases: ["Chuck Akre"] },
+  { slug: "third-point", cik: "0001040273", displayName: "Third Point LLC", profileLine: "Daniel S. Loeb · New York, New York", aliases: ["Daniel Loeb"] },
 ] as const;
 
 export type Manager = (typeof managers)[number];

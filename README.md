@@ -35,6 +35,11 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 | Duan Yongping · H&H International Investment | `0001759760` | `/investors/hh-international-investment` |
 | Li Lu · Himalaya Capital Management | `0001709323` | `/investors/himalaya-capital-management` |
 | Leopold Aschenbrenner · Situational Awareness LP | `0002045724` | `/investors/situational-awareness` |
+| Seth Klarman · Baupost Group | `0001061768` | `/investors/baupost-group` |
+| Terry Smith · Fundsmith LLP | `0001569205` | `/investors/fundsmith` |
+| David Tepper · Appaloosa LP | `0001656456` | `/investors/appaloosa` |
+| Chuck Akre · Akre Capital Management | `0001112520` | `/investors/akre-capital-management` |
+| Daniel Loeb · Third Point LLC | `0001040273` | `/investors/third-point` |
 
 The tracked universe is intentionally curated. Manager definitions live in `src/lib/sec.ts` and are used by both the overview and statically published manager routes.
 
@@ -49,6 +54,7 @@ The homepage ranks available managers by the disclosed value of their latest pub
 - reporting period and filing timestamp;
 - live source availability;
 - direct navigation to each portfolio.
+- manager and investor-name search with initial-letter filtering.
 
 ### Portfolio detail
 
