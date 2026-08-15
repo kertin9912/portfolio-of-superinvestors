@@ -94,7 +94,7 @@ function numeric(value: unknown): number {
   return 0;
 }
 function text(value: unknown): string { return typeof value === "string" || typeof value === "number" ? String(value).trim() : ""; }
-function parsePositions(xml: string): Position[] {
+function parsePositions(xml: string, valueScale: number): Position[] {
   const parsed: unknown = new XMLParser({ ignoreAttributes: true, removeNSPrefix: true, parseTagValue: false, trimValues: true }).parse(xml);
   if (!isRecord(parsed) || !isRecord(parsed.informationTable)) throw new Error("SEC information table XML is invalid");
   const rawTable = parsed.informationTable.infoTable;
@@ -103,7 +103,7 @@ function parsePositions(xml: string): Position[] {
   for (const row of rows) {
     if (!isRecord(row)) continue;
     const cusip = text(row.cusip); const issuer = text(row.nameOfIssuer); const titleOfClass = text(row.titleOfClass);
-    const amount = isRecord(row.shrsOrPrnAmt) ? numeric(row.shrsOrPrnAmt.sshPrnamt) : 0; const value = numeric(row.value);
+    const amount = isRecord(row.shrsOrPrnAmt) ? numeric(row.shrsOrPrnAmt.sshPrnamt) : 0; const value = numeric(row.value) * valueScale;
     if (!cusip || !issuer) continue;
     const key = `${cusip}:${titleOfClass}`; const existing = grouped.get(key);
     grouped.set(key, { cusip, issuer, titleOfClass, shares: (existing?.shares ?? 0) + amount, value: (existing?.value ?? 0) + value });
@@ -111,9 +111,9 @@ function parsePositions(xml: string): Position[] {
   const totalValue = [...grouped.values()].reduce((sum, position) => sum + position.value, 0);
   return [...grouped.values()].map((position) => ({ ...position, weight: totalValue > 0 ? (position.value / totalValue) * 100 : 0 })).sort((left, right) => right.value - left.value);
 }
-async function getPortfolioForFiling(cik: string, managerName: string, filing: FilingMeta, userAgent: string): Promise<Portfolio> {
+async function getPortfolioForFiling(cik: string, managerName: string, filing: FilingMeta, userAgent: string, valueScale: number): Promise<Portfolio> {
   const informationTableUrl = await findInformationTable(cik, filing, userAgent);
-  const positions = parsePositions(await readLimitedText(await secFetch(informationTableUrl, userAgent), MAX_XML_BYTES));
+  const positions = parsePositions(await readLimitedText(await secFetch(informationTableUrl, userAgent), MAX_XML_BYTES), valueScale);
   if (positions.length === 0) throw new Error(`No public positions found for ${filing.accessionNumber}`);
   return { cik, managerName, filing, filingUrl: `${archiveBase(cik, filing.accessionNumber)}/${filing.primaryDocument}`, positions, totalValue: positions.reduce((sum, position) => sum + position.value, 0) };
 }
@@ -123,13 +123,14 @@ export async function ingestManager(manager: Manager, userAgent: string, existin
   const currentFiling = submissions.filings[0];
   if (!currentFiling) throw new Error(`No 13F filings found for CIK ${manager.cik}`);
   if (existing?.comparison.current.filing.accessionNumber === currentFiling.accessionNumber) return { status: "unchanged", snapshot: existing };
-  const current = await getPortfolioForFiling(manager.cik, submissions.name, currentFiling, userAgent);
+  const valueScale = manager.valueScale ?? 1;
+  const current = await getPortfolioForFiling(manager.cik, submissions.name, currentFiling, userAgent, valueScale);
   let previous: Portfolio | null;
   if (existing && existing.comparison.current.filing.reportDate !== currentFiling.reportDate) previous = existing.comparison.current;
   else if (existing) previous = existing.comparison.previous;
   else {
     const previousFiling = submissions.filings.find((filing) => filing.reportDate !== currentFiling.reportDate);
-    previous = previousFiling ? await getPortfolioForFiling(manager.cik, submissions.name, previousFiling, userAgent) : null;
+    previous = previousFiling ? await getPortfolioForFiling(manager.cik, submissions.name, previousFiling, userAgent, valueScale) : null;
   }
   return { status: "updated", snapshot: { version: 1, updatedAt: new Date().toISOString(), comparison: comparePortfolios(current, previous) } };
 }

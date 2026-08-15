@@ -1,3 +1,13 @@
+export type Manager = {
+  readonly slug: string;
+  readonly cik: string;
+  readonly displayName: string;
+  readonly profileLine: string;
+  readonly aliases: readonly string[];
+  readonly category: "SUPERINVESTOR" | "GLOBAL ASSET OWNER";
+  readonly valueScale?: number;
+};
+
 export const managers = [
   { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway", profileLine: "Warren E. Buffett · Omaha, Nebraska", aliases: ["Warren Buffett"], category: "SUPERINVESTOR" },
   { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management", profileLine: "Bill Ackman · New York, New York", aliases: ["Bill Ackman"], category: "SUPERINVESTOR" },
@@ -11,14 +21,13 @@ export const managers = [
   { slug: "appaloosa", cik: "0001656456", displayName: "Appaloosa LP", profileLine: "David Tepper · Short Hills, New Jersey", aliases: ["David Tepper"], category: "SUPERINVESTOR" },
   { slug: "akre-capital-management", cik: "0001112520", displayName: "Akre Capital Management", profileLine: "Chuck Akre · Middleburg, Virginia", aliases: ["Chuck Akre"], category: "SUPERINVESTOR" },
   { slug: "third-point", cik: "0001040273", displayName: "Third Point LLC", profileLine: "Daniel S. Loeb · New York, New York", aliases: ["Daniel Loeb"], category: "SUPERINVESTOR" },
+  { slug: "duquesne-family-office", cik: "0001536411", displayName: "Duquesne Family Office", profileLine: "Stanley Druckenmiller · New York, New York", aliases: ["Stanley Druckenmiller", "Duquesne"], category: "SUPERINVESTOR", valueScale: 1_000 },
   { slug: "calpers", cik: "0000919079", displayName: "California Public Employees' Retirement System", profileLine: "CalPERS · Sacramento, California", aliases: ["CalPERS", "California Public Employees Retirement System"], category: "GLOBAL ASSET OWNER" },
   { slug: "cpp-investments", cik: "0001283718", displayName: "Canada Pension Plan Investment Board", profileLine: "CPP Investments · Toronto, Canada", aliases: ["CPPIB", "CPP Investments"], category: "GLOBAL ASSET OWNER" },
   { slug: "calstrs", cik: "0001081019", displayName: "California State Teachers' Retirement System", profileLine: "CalSTRS · West Sacramento, California", aliases: ["CalSTRS", "California State Teachers Retirement System"], category: "GLOBAL ASSET OWNER" },
   { slug: "temasek-holdings", cik: "0001021944", displayName: "Temasek Holdings", profileLine: "Sovereign investor · Singapore", aliases: ["Temasek", "Temasek Holdings Private Limited"], category: "GLOBAL ASSET OWNER" },
   { slug: "saudi-public-investment-fund", cik: "0001767640", displayName: "Public Investment Fund", profileLine: "Saudi PIF · Riyadh, Saudi Arabia", aliases: ["PIF", "Saudi PIF", "Saudi Public Investment Fund"], category: "GLOBAL ASSET OWNER" },
-] as const;
-
-export type Manager = (typeof managers)[number];
+] as const satisfies readonly Manager[];
 
 export function getManagerBySlug(slug: string): Manager | undefined {
   return managers.find((manager) => manager.slug === slug);

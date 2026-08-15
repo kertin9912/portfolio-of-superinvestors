@@ -41,6 +41,7 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 | David Tepper · Appaloosa LP | `0001656456` | `/investors/appaloosa` |
 | Chuck Akre · Akre Capital Management | `0001112520` | `/investors/akre-capital-management` |
 | Daniel Loeb · Third Point LLC | `0001040273` | `/investors/third-point` |
+| Stanley Druckenmiller · Duquesne Family Office | `0001536411` | `/investors/duquesne-family-office` |
 | California Public Employees' Retirement System (CalPERS) | `0000919079` | `/investors/calpers` |
 | Canada Pension Plan Investment Board (CPP Investments) | `0001283718` | `/investors/cpp-investments` |
 | California State Teachers' Retirement System (CalSTRS) | `0001081019` | `/investors/calstrs` |
@@ -96,6 +97,7 @@ The parser performs the following steps:
 3. Resolves the filing archive and identifies its information-table XML document.
 4. Parses `informationTable.infoTable` entries with `fast-xml-parser`.
 5. Normalizes issuer names, disclosed values, share amounts, CUSIPs, and security classes.
+   Manager-level value scaling is explicit for legacy filings that still report holdings in thousands of dollars.
 6. Aggregates duplicate filing rows by CUSIP and security class.
 7. Calculates each position's share of total disclosed value.
 8. Compares current and prior filings by security identity to classify positions as `NEW`, `ADDED`, `REDUCED`, `UNCHANGED`, or `SOLD`.

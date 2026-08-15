@@ -1,16 +1,20 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { ingestManager } from "../src/lib/sec-ingestion";
-import { managers, portfolioKey } from "../src/lib/portfolio";
+import { getManagerBySlug, managers, portfolioKey, type Manager } from "../src/lib/portfolio";
 
 async function main(): Promise<void> {
   const outputArgument = process.argv[2];
-  if (!outputArgument) throw new Error("Usage: tsx scripts/seed-snapshots.ts <output-directory>");
+  const managerSlug = process.argv[3];
+  if (!outputArgument) throw new Error("Usage: tsx scripts/seed-snapshots.ts <output-directory> [manager-slug]");
 
   const outputDirectory = resolve(outputArgument);
   await mkdir(outputDirectory, { recursive: true });
+  const selectedManager = managerSlug ? getManagerBySlug(managerSlug) : null;
+  if (managerSlug && !selectedManager) throw new Error(`Unknown manager slug: ${managerSlug}`);
+  const managersToSeed: readonly Manager[] = selectedManager ? [selectedManager] : managers;
 
-  for (const manager of managers) {
+  for (const manager of managersToSeed) {
     process.stderr.write(`Fetching ${manager.slug}... `);
     const result = await ingestManager(manager, "Signal13F holdings monitor kkertin1214@gmail.com", null);
     const fileName = `${manager.cik}.json`;
