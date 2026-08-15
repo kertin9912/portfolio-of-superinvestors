@@ -6,7 +6,7 @@ import { HoldingsTable, type HoldingTableRow } from "./holdings-table";
 import styles from "./page.module.css";
 import { formatMoney, formatPercent, getManagerBySlug, getPortfolioComparison, managers } from "@/lib/sec";
 
-export const revalidate = 60;
+export const revalidate = 900;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -137,7 +137,7 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
             <div><dt>SEC ACCEPTED</dt><dd>{current.filing.acceptanceDateTime}</dd></div>
             <div><dt>REPORT DATE</dt><dd>{current.filing.reportDate}</dd></div>
             <div><dt>ACCESSION</dt><dd>{current.filing.accessionNumber}</dd></div>
-            <div><dt>PIPELINE CACHE</dt><dd>60 SECONDS</dd></div>
+            <div><dt>FILING CHECK</dt><dd>DEADLINE WINDOW</dd></div>
           </dl>
           <a href={current.filingUrl} target="_blank" rel="noreferrer">OPEN ORIGINAL SEC FILING ↗</a>
         </section>

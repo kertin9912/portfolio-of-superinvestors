@@ -18,7 +18,7 @@ Signal13F is a Bloomberg-inspired institutional holdings monitor for following a
 Many 13F aggregators update slowly, mix filing data with estimates, or obscure the original source. Signal13F keeps the data path short and auditable:
 
 - **Official sources only** — holdings come directly from SEC EDGAR submissions and information-table XML files.
-- **Fast updates** — SEC requests and rendered pages revalidate every 60 seconds.
+- **Deadline-aware updates** — submissions are checked during the quarterly 13F deadline windows instead of being polled continuously all year.
 - **No synthetic enrichment** — no mock positions, inferred tickers, estimated prices, or silently merged external datasets.
 - **Manager-level analysis** — disclosed value, position count, concentration, allocation, and quarterly share-count changes.
 - **Source traceability** — every manager page links to the original SEC filing.
@@ -91,7 +91,9 @@ The parser performs the following steps:
 6. Aggregates duplicate filing rows by CUSIP and security class.
 7. Calculates each position's share of total disclosed value.
 8. Compares current and prior filings by security identity to classify positions as `NEW`, `ADDED`, `REDUCED`, `UNCHANGED`, or `SOLD`.
-9. Revalidates SEC responses and application pages every 60 seconds.
+9. Checks submissions every 15 minutes during the February, May, August, and November filing windows; outside those windows, submissions stay cached until the next window begins.
+10. Long-caches immutable filing indexes and information-table XML, limits dashboard concurrency, and retries SEC rate-limit responses with backoff.
+11. Uses Cloudflare's native subrequest cache override so each SEC file is cached without adding extra Worker subrequests.
 
 CUSIP and security-class fields remain internal identity keys. They are deliberately omitted from the visible holdings tables because they add little value for the intended audience.
 
@@ -102,12 +104,12 @@ CUSIP and security-class fields remain internal identity keys. They are delibera
 | Framework | Next.js 16 App Router and React 19 Server Components |
 | Styling | Scoped CSS Modules with a documented semantic typography system |
 | Data parsing | Native `fetch` and `fast-xml-parser` |
-| Caching | Next.js fetch cache and 60-second route revalidation |
+| Caching | Deadline-aware submissions cache and one-year immutable filing cache at the Cloudflare edge |
 | Hosting | OpenNext on Cloudflare Workers |
 | Deployment | Wrangler |
 | Primary source | SEC EDGAR submissions and filing archives |
 
-Independent manager requests run concurrently. Dashboard failures are isolated with `Promise.allSettled`, so one unavailable SEC source does not prevent the other managers from rendering. Manager comparison requests fetch current and previous filings in parallel.
+Manager requests run in bounded batches of three to stay below SEC fair-access limits. Failures are isolated with `Promise.allSettled`, so one unavailable SEC source does not prevent the other managers from rendering. Manager comparison requests fetch current and previous filings in parallel.
 
 ## Repository structure
 

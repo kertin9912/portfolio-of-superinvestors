@@ -1,6 +1,6 @@
 import { ManagerPortfolioPage, managerMetadata } from "../[slug]/page";
 
-export const revalidate = 60;
+export const revalidate = 900;
 export const metadata = managerMetadata("pershing-square");
 
 export default function Page() {

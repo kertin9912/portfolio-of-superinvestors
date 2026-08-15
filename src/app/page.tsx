@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 import { ManagerDirectory, type ManagerDirectoryItem } from "./manager-directory";
 import { formatMoney, getManagerDashboard } from "@/lib/sec";
 
-export const revalidate = 60;
+export const revalidate = 900;
 
 function formatAccepted(value: string): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -57,7 +57,7 @@ export default async function Home() {
       <div className={styles.tape}>
         <span><b>MARKET</b> UNITED STATES</span>
         <span><b>FORM</b> 13F-HR</span>
-        <span><b>REFRESH</b> 60 SEC</span>
+        <span><b>FILING CHECK</b> DEADLINE WINDOW</span>
         <span><b>COVERAGE</b> {available.length}/{dashboard.length} ONLINE</span>
       </div>
 

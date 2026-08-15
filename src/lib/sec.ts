@@ -3,7 +3,17 @@ import { XMLParser } from "fast-xml-parser";
 
 const SEC_BASE = "https://www.sec.gov";
 const SEC_DATA = "https://data.sec.gov";
-const REVALIDATE_SECONDS = 60;
+const ACTIVE_WINDOW_REVALIDATE_SECONDS = 15 * 60;
+const ARCHIVE_REVALIDATE_SECONDS = 365 * 24 * 60 * 60;
+const DASHBOARD_BATCH_SIZE = 3;
+const SEC_MAX_ATTEMPTS = 3;
+
+const FILING_WINDOWS = [
+  { month: 1, startDay: 11, endDay: 18 },
+  { month: 4, startDay: 12, endDay: 18 },
+  { month: 7, startDay: 11, endDay: 17 },
+  { month: 10, startDay: 11, endDay: 17 },
+] as const;
 
 export const managers = [
   { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway", profileLine: "Warren E. Buffett · Omaha, Nebraska", aliases: ["Warren Buffett"] },
@@ -96,19 +106,70 @@ function secHeaders(): HeadersInit {
   };
 }
 
-async function secFetch(url: string): Promise<Response> {
-  const response = await fetch(url, {
-    headers: secHeaders(),
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
-  if (!response.ok) {
+function submissionRevalidateSeconds(now = new Date()): number {
+  const current = now.getTime();
+  const year = now.getUTCFullYear();
+
+  for (const window of FILING_WINDOWS) {
+    const start = Date.UTC(year, window.month, window.startDay);
+    const end = Date.UTC(year, window.month, window.endDay, 23, 59, 59);
+    if (current >= start && current <= end) return ACTIVE_WINDOW_REVALIDATE_SECONDS;
+    if (current < start) return Math.max(1, Math.ceil((start - current) / 1000));
+  }
+
+  const nextWindow = FILING_WINDOWS[0];
+  const nextStart = Date.UTC(year + 1, nextWindow.month, nextWindow.startDay);
+  return Math.max(1, Math.ceil((nextStart - current) / 1000));
+}
+
+function retryDelayMilliseconds(response: Response, attempt: number): number {
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.min(30_000, Math.max(1_000, seconds * 1000));
+    const date = Date.parse(retryAfter);
+    if (Number.isFinite(date)) return Math.min(30_000, Math.max(1_000, date - Date.now()));
+  }
+  return 1000 * 2 ** attempt;
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function secFetch(url: string, revalidate: number): Promise<Response> {
+  for (let attempt = 0; attempt < SEC_MAX_ATTEMPTS; attempt += 1) {
+    const response = await fetch(url, {
+      headers: secHeaders(),
+      next: { revalidate },
+      cf: {
+        cacheEverything: true,
+        cacheTtlByStatus: {
+          "200-299": revalidate,
+          "429": 0,
+          "500-599": 0,
+        },
+      },
+    });
+    if (response.ok) return response;
+
+    const retryable = response.status === 429 || response.status === 502 || response.status === 503 || response.status === 504;
+    if (retryable && attempt < SEC_MAX_ATTEMPTS - 1) {
+      const retryDelay = retryDelayMilliseconds(response, attempt);
+      await response.body?.cancel();
+      await delay(retryDelay);
+      continue;
+    }
+
+    await response.body?.cancel();
     throw new Error(`SEC request failed (${response.status}) for ${url}`);
   }
-  return response;
+
+  throw new Error(`SEC request failed after retries for ${url}`);
 }
 
 async function getSubmissions(cik: string): Promise<{ name: string; filings: FilingMeta[] }> {
-  const response = await secFetch(`${SEC_DATA}/submissions/CIK${cik}.json`);
+  const response = await secFetch(`${SEC_DATA}/submissions/CIK${cik}.json`, submissionRevalidateSeconds());
   const payload: unknown = await response.json();
   if (!isRecord(payload) || typeof payload.name !== "string" || !isRecord(payload.filings) || !isRecord(payload.filings.recent)) {
     throw new Error(`Unexpected SEC submissions response for CIK ${cik}`);
@@ -145,7 +206,7 @@ function archiveBase(cik: string, accessionNumber: string): string {
 
 async function findInformationTable(cik: string, filing: FilingMeta): Promise<string> {
   const base = archiveBase(cik, filing.accessionNumber);
-  const response = await secFetch(`${base}/index.json`);
+  const response = await secFetch(`${base}/index.json`, ARCHIVE_REVALIDATE_SECONDS);
   const payload: unknown = await response.json();
   if (!isRecord(payload) || !isRecord(payload.directory) || !Array.isArray(payload.directory.item)) {
     throw new Error(`Unexpected SEC filing index for ${filing.accessionNumber}`);
@@ -209,7 +270,7 @@ function parsePositions(xml: string): Position[] {
 
 async function getPortfolioForFiling(cik: string, managerName: string, filing: FilingMeta): Promise<Portfolio> {
   const informationTableUrl = await findInformationTable(cik, filing);
-  const response = await secFetch(informationTableUrl);
+  const response = await secFetch(informationTableUrl, ARCHIVE_REVALIDATE_SECONDS);
   const xml = await response.text();
   const positions = parsePositions(xml);
   return {
@@ -264,12 +325,26 @@ export const getPortfolioComparison = cache(async (cik: string): Promise<Portfol
 });
 
 export async function getManagerDashboard() {
-  const results = await Promise.allSettled(managers.map((manager) => getLatestPortfolio(manager.cik)));
-  return results.map((result, index) => ({
-    config: managers[index],
-    portfolio: result.status === "fulfilled" ? result.value : null,
-    error: result.status === "rejected" ? (result.reason instanceof Error ? result.reason.message : "Unknown SEC error") : null,
-  }));
+  const dashboard: Array<{
+    config: Manager;
+    portfolio: Portfolio | null;
+    error: string | null;
+  }> = [];
+
+  for (let offset = 0; offset < managers.length; offset += DASHBOARD_BATCH_SIZE) {
+    const batch = managers.slice(offset, offset + DASHBOARD_BATCH_SIZE);
+    const results = await Promise.allSettled(batch.map((manager) => getLatestPortfolio(manager.cik)));
+    for (let index = 0; index < results.length; index += 1) {
+      const result = results[index];
+      dashboard.push({
+        config: batch[index],
+        portfolio: result.status === "fulfilled" ? result.value : null,
+        error: result.status === "rejected" ? (result.reason instanceof Error ? result.reason.message : "Unknown SEC error") : null,
+      });
+    }
+  }
+
+  return dashboard;
 }
 
 export function formatMoney(value: number): string {
