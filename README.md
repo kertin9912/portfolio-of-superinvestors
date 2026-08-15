@@ -19,6 +19,7 @@ Signal13F is a Bloomberg-inspired institutional holdings monitor built with Next
 - Tiger Global
 - Duan Yongping - H&H International Investment
 - Li Lu - Himalaya Capital Management
+- Leopold Aschenbrenner - Situational Awareness LP
 
 ## Data pipeline
 

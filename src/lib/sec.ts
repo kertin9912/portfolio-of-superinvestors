@@ -12,6 +12,7 @@ export const managers = [
   { slug: "tiger-global", cik: "0001167483", displayName: "Tiger Global Management", profileLine: "Chase Coleman · New York, New York" },
   { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping · H&H International Investment", profileLine: "Duan Yongping · Palo Alto, California" },
   { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu · Himalaya Capital Management", profileLine: "Li Lu · Seattle, Washington" },
+  { slug: "situational-awareness", cik: "0002045724", displayName: "Leopold Aschenbrenner · Situational Awareness LP", profileLine: "Leopold Aschenbrenner · San Francisco, California" },
 ] as const;
 
 export type Manager = (typeof managers)[number];
