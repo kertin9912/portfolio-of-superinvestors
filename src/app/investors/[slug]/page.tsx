@@ -13,13 +13,17 @@ export function generateStaticParams() {
   return managers.map((manager) => ({ slug: manager.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/investors/[slug]">): Promise<Metadata> {
-  const { slug } = await params;
+export function managerMetadata(slug: string): Metadata {
   const manager = getManagerBySlug(slug);
   return manager ? {
     title: `${manager.displayName} Holdings | Signal13F`,
     description: `Latest ${manager.displayName} portfolio holdings from official SEC Form 13F filings.`,
   } : {};
+}
+
+export async function generateMetadata({ params }: PageProps<"/investors/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  return managerMetadata(slug);
 }
 
 function formatAccepted(value: string): string {
@@ -48,8 +52,7 @@ function TerminalHeader({ managerName }: { managerName: string }) {
   );
 }
 
-export default async function ManagerPage({ params }: PageProps<"/investors/[slug]">) {
-  const { slug } = await params;
+export async function ManagerPortfolioPage({ slug }: { slug: string }) {
   const manager = getManagerBySlug(slug);
   if (!manager) notFound();
 
@@ -141,4 +144,9 @@ export default async function ManagerPage({ params }: PageProps<"/investors/[slu
       </div>
     </main>
   );
+}
+
+export default async function ManagerPage({ params }: PageProps<"/investors/[slug]">) {
+  const { slug } = await params;
+  return <ManagerPortfolioPage slug={slug} />;
 }
