@@ -19,6 +19,7 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 
 - **Official sources only** — holdings come directly from SEC EDGAR submissions and information-table XML files.
 - **Deadline-aware updates** — submissions are checked during the quarterly 13F deadline windows instead of being polled continuously all year.
+- **Persistent delivery** — user requests read pre-parsed Cloudflare KV snapshots and never call SEC EDGAR directly.
 - **No synthetic enrichment** — no mock positions, inferred tickers, estimated prices, or silently merged external datasets.
 - **Manager-level analysis** — disclosed value, position count, concentration, allocation, and quarterly share-count changes.
 - **Source traceability** — every manager page links to the original SEC filing.
@@ -40,8 +41,13 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 | David Tepper · Appaloosa LP | `0001656456` | `/investors/appaloosa` |
 | Chuck Akre · Akre Capital Management | `0001112520` | `/investors/akre-capital-management` |
 | Daniel Loeb · Third Point LLC | `0001040273` | `/investors/third-point` |
+| California Public Employees' Retirement System (CalPERS) | `0000919079` | `/investors/calpers` |
+| Canada Pension Plan Investment Board (CPP Investments) | `0001283718` | `/investors/cpp-investments` |
+| California State Teachers' Retirement System (CalSTRS) | `0001081019` | `/investors/calstrs` |
+| Temasek Holdings | `0001021944` | `/investors/temasek-holdings` |
+| Saudi Public Investment Fund | `0001767640` | `/investors/saudi-public-investment-fund` |
 
-The tracked universe is intentionally curated. Manager definitions live in `src/lib/sec.ts` and are used by both the overview and statically published manager routes.
+The tracked universe is intentionally curated. Manager definitions and the distinction between `SUPERINVESTOR` and `GLOBAL ASSET OWNER` live in `src/lib/portfolio.ts`.
 
 ## Product surface
 
@@ -77,8 +83,10 @@ flowchart LR
     D --> E["Parse and normalize rows"]
     E --> F["Aggregate security identities"]
     F --> G["Calculate weights and Q/Q activity"]
-    G --> H["Next.js Server Components"]
-    H --> I["Cloudflare Worker"]
+    G --> H["Cloudflare KV snapshots"]
+    H --> I["Next.js Server Components"]
+    J["Cron Trigger"] --> K["Cloudflare Queue"]
+    K --> B
 ```
 
 The parser performs the following steps:
@@ -91,9 +99,9 @@ The parser performs the following steps:
 6. Aggregates duplicate filing rows by CUSIP and security class.
 7. Calculates each position's share of total disclosed value.
 8. Compares current and prior filings by security identity to classify positions as `NEW`, `ADDED`, `REDUCED`, `UNCHANGED`, or `SOLD`.
-9. Checks submissions every 15 minutes during the February, May, August, and November filing windows; outside those windows, submissions stay cached until the next window begins.
-10. Long-caches immutable filing indexes and information-table XML, limits dashboard concurrency, and retries SEC rate-limit responses with backoff.
-11. Uses Cloudflare's native subrequest cache override so each SEC file is cached without adding extra Worker subrequests.
+9. An hourly Cron Trigger runs only from the 11th through the 18th of February, May, August, and November.
+10. The trigger writes one queue message per manager; a concurrency-one consumer spaces SEC work across independent invocations and retries transient failures with delay.
+11. Updated current/prior comparisons are written to Workers KV. Homepage and detail requests only read those persisted snapshots.
 
 CUSIP and security-class fields remain internal identity keys. They are deliberately omitted from the visible holdings tables because they add little value for the intended audience.
 
@@ -104,12 +112,13 @@ CUSIP and security-class fields remain internal identity keys. They are delibera
 | Framework | Next.js 16 App Router and React 19 Server Components |
 | Styling | Scoped CSS Modules with a documented semantic typography system |
 | Data parsing | Native `fetch` and `fast-xml-parser` |
-| Caching | Deadline-aware submissions cache and one-year immutable filing cache at the Cloudflare edge |
+| Persistence | Workers KV, one versioned comparison snapshot per manager |
+| Background work | Cron Triggers and Cloudflare Queues with delayed retries |
 | Hosting | OpenNext on Cloudflare Workers |
 | Deployment | Wrangler |
 | Primary source | SEC EDGAR submissions and filing archives |
 
-Manager requests run in bounded batches of three to stay below SEC fair-access limits. Failures are isolated with `Promise.allSettled`, so one unavailable SEC source does not prevent the other managers from rendering. Manager comparison requests fetch current and previous filings in parallel.
+The ingestion Worker is isolated from the user-facing OpenNext Worker. Queue messages are consumed one manager at a time, while the frontend performs a single multi-key KV read for its directory and one KV read for a manager detail page.
 
 ## Repository structure
 
@@ -127,11 +136,17 @@ src/
 │       │   └── page.tsx
 │       └── <manager-slug>/page.tsx         # Explicit Cloudflare routes
 └── lib/
-    └── sec.ts                              # SEC client, parser, and comparisons
+    ├── portfolio.ts                        # Manager registry, types, comparisons
+    ├── sec-ingestion.ts                    # Bounded SEC client and XML parser
+    └── sec.ts                              # Read-only KV access for Next.js
+
+worker/ingest.ts                            # Queue, Cron, retry, and KV writes
+scripts/seed-snapshots.ts                   # First-run snapshot initialization
 
 AGENTS.md                                   # Next.js and typography conventions
 open-next.config.ts                         # OpenNext adapter configuration
 wrangler.jsonc                              # Cloudflare Worker configuration
+wrangler.ingest.jsonc                       # Ingestion Worker configuration
 ```
 
 ## Getting started
@@ -140,7 +155,7 @@ wrangler.jsonc                              # Cloudflare Worker configuration
 
 - Node.js 20.9 or newer
 - npm
-- A descriptive SEC user agent with a monitored contact address
+- A Cloudflare account with Workers, KV, Queues, and Cron Triggers enabled
 
 ### Installation
 
@@ -149,14 +164,6 @@ git clone https://github.com/kertin9912/portfolio-of-superinvestors.git
 cd portfolio-of-superinvestors
 npm install
 ```
-
-Create `.env.local`:
-
-```bash
-SEC_USER_AGENT="Signal13F your-email@example.com"
-```
-
-The SEC asks automated clients to identify themselves. Do not use the placeholder address in production.
 
 Start the development server:
 
@@ -175,6 +182,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Create a production Next.js build and run type checking |
 | `npm run preview` | Build with OpenNext and run a Cloudflare preview |
 | `npm run deploy` | Build and deploy the Worker with Wrangler |
+| `npm run deploy:ingest` | Deploy the scheduled ingestion Worker |
+| `npm run seed:snapshots -- <directory>` | Parse initial SEC snapshots into a local staging directory |
 | `npm run cf-typegen` | Regenerate Cloudflare environment types |
 
 ## Validation
@@ -198,17 +207,17 @@ When changing presentation code, also verify:
 
 OpenNext and Wrangler are already configured for the Worker named `portfolio-of-superinvestors`.
 
-Authenticate Wrangler and store the SEC identity as a secret:
+Authenticate Wrangler and create the KV namespace and queue named in the configs:
 
 ```bash
 npx wrangler login
-npx wrangler secret put SEC_USER_AGENT
 ```
 
 Then deploy:
 
 ```bash
 npm run deploy
+npm run deploy:ingest
 ```
 
 Never commit contact emails, API credentials, or `.env.local` files.

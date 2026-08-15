@@ -1,6 +1,6 @@
 import { ManagerPortfolioPage, managerMetadata } from "../[slug]/page";
 
-export const revalidate = 900;
+export const dynamic = "force-dynamic";
 export const metadata = managerMetadata("berkshire-hathaway");
 
 export default function Page() {

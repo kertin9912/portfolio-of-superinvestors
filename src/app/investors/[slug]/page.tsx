@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { DoughnutChart } from "./doughnut-chart";
 import { HoldingsTable, type HoldingTableRow } from "./holdings-table";
 import styles from "./page.module.css";
-import { formatMoney, formatPercent, getManagerBySlug, getPortfolioComparison, managers } from "@/lib/sec";
+import { formatDate, formatDateTime, formatMoney, formatPercent, getManagerBySlug, getPortfolioComparison, managers } from "@/lib/sec";
 
-export const revalidate = 900;
+export const dynamic = "force-dynamic";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -26,20 +26,13 @@ export async function generateMetadata({ params }: PageProps<"/investors/[slug]"
   return managerMetadata(slug);
 }
 
-function formatAccepted(value: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false, timeZone: "America/New_York",
-  }).format(new Date(value)).toUpperCase();
-}
-
 function TerminalHeader({ managerName }: { managerName: string }) {
   return (
     <>
       <div className={styles.blackBar}>
         <Link href="/" className={styles.brand}>SIGNAL<span>13F</span></Link>
         <span>INSTITUTIONAL HOLDINGS INTELLIGENCE</span>
-        <div className={styles.live}><i /> SEC EDGAR LIVE</div>
+        <div className={styles.live}><i /> PERSISTED SEC DATA</div>
       </div>
       <nav className={styles.nav} aria-label="Primary navigation">
         <Link href="/">MANAGERS</Link>
@@ -83,7 +76,7 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
         <span>MANAGER <b>{manager.displayName.toUpperCase()}</b></span>
         <span>CIK <b>{current.cik}</b></span>
         <span>FORM <b>{current.filing.form}</b></span>
-        <span>PERIOD <b>{current.filing.reportDate}</b></span>
+        <span>PERIOD <b>{formatDate(current.filing.reportDate)}</b></span>
         <span className={styles.contextStatus}><i /> VERIFIED SOURCE</span>
       </div>
 
@@ -96,7 +89,7 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
           </div>
           <div className={styles.filingStamp}>
             <span>LATEST SEC ACCEPTANCE</span>
-            <b>{formatAccepted(current.filing.acceptanceDateTime)} ET</b>
+            <b>{formatDateTime(current.filing.acceptanceDateTime)}</b>
             <small>ACCESSION {current.filing.accessionNumber}</small>
           </div>
         </header>
@@ -105,7 +98,7 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
           <article><span>DISCLOSED VALUE</span><b>{formatMoney(current.totalValue)}</b><small className={(comparison.valueChange ?? 0) >= 0 ? styles.up : styles.down}>{formatPercent(comparison.valueChange)} VS PRIOR REPORT</small></article>
           <article><span>REPORTABLE POSITIONS</span><b>{positions.length}</b><small>{counts.new} NEW · {counts.sold} SOLD</small></article>
           <article><span>TOP 10 CONCENTRATION</span><b>{topTenConcentration.toFixed(1)}%</b><small>OF REPORTED 13F VALUE</small></article>
-          <article><span>REPORTING PERIOD</span><b>{current.filing.reportDate}</b><small>FILED {current.filing.filingDate}</small></article>
+          <article><span>REPORTING PERIOD</span><b>{formatDate(current.filing.reportDate)}</b><small>FILED {formatDate(current.filing.filingDate)}</small></article>
         </section>
 
         <section className={styles.allocationPanel} id="allocation">
@@ -122,8 +115,8 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
             <article><span>SOLD OUT</span><b className={styles.down}>{counts.sold}</b></article>
           </div>
           <dl className={styles.comparison}>
-            <div><dt>CURRENT PERIOD</dt><dd>{current.filing.reportDate}</dd></div>
-            <div><dt>PRIOR PERIOD</dt><dd>{previous?.filing.reportDate ?? "—"}</dd></div>
+            <div><dt>CURRENT PERIOD</dt><dd>{formatDate(current.filing.reportDate)}</dd></div>
+            <div><dt>PRIOR PERIOD</dt><dd>{previous ? formatDate(previous.filing.reportDate) : "—"}</dd></div>
             <div><dt>UNCHANGED</dt><dd>{counts.unchanged} POSITIONS</dd></div>
             <div><dt>VALUE CHANGE</dt><dd className={(comparison.valueChange ?? 0) >= 0 ? styles.up : styles.down}>{formatPercent(comparison.valueChange)}</dd></div>
           </dl>
@@ -134,10 +127,10 @@ export async function ManagerPortfolioPage({ slug }: { slug: string }) {
         <section className={styles.sourcePanel} id="source">
           <div><span>DATA CONTROL / SOURCE VERIFIED</span><h2>Official SEC filing record</h2><p>Positions are parsed from the filing&apos;s public XML information table and normalized by security identity. Activity compares reported share counts with the immediately preceding reporting period. No mock positions, inferred tickers, or estimated market prices are used.</p></div>
           <dl>
-            <div><dt>SEC ACCEPTED</dt><dd>{current.filing.acceptanceDateTime}</dd></div>
-            <div><dt>REPORT DATE</dt><dd>{current.filing.reportDate}</dd></div>
+            <div><dt>SEC ACCEPTED</dt><dd>{formatDateTime(current.filing.acceptanceDateTime)}</dd></div>
+            <div><dt>REPORT DATE</dt><dd>{formatDate(current.filing.reportDate)}</dd></div>
             <div><dt>ACCESSION</dt><dd>{current.filing.accessionNumber}</dd></div>
-            <div><dt>FILING CHECK</dt><dd>DEADLINE WINDOW</dd></div>
+            <div><dt>DATA PIPELINE</dt><dd>PRE-FETCHED / PERSISTED</dd></div>
           </dl>
           <a href={current.filingUrl} target="_blank" rel="noreferrer">OPEN ORIGINAL SEC FILING ↗</a>
         </section>

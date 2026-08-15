@@ -2,13 +2,21 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "portfolio-of-superinvestors",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2026-08-14",
+  "compatibility_date": "2026-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "kv_namespaces": [
+    {
+      "binding": "PORTFOLIO_SNAPSHOTS",
+      "id": "b20d4fe0236a4a9aabe1e6e01e782df2",
+      "remote": true
+    }
+  ],
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "head_sampling_rate": 1
   }
 }

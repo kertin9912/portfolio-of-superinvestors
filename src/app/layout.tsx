@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Signal13F | Institutional Holdings Intelligence",
-  description: "Signal13F tracks live superinvestor holdings parsed directly from SEC Form 13F filings.",
+  description: "Signal13F tracks superinvestor and global asset-owner holdings from persisted SEC Form 13F snapshots.",
   applicationName: "Signal13F",
 };
 

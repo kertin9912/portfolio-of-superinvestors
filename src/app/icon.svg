@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Signal13F">
-  <rect width="64" height="64" rx="10" fill="#050505"/>
-  <path d="M11 44L24 31L35 38L51 19" fill="none" stroke="#ffcd1e" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
-  <circle cx="51" cy="19" r="6" fill="#f05143"/>
-  <path d="M11 52H53" stroke="#ffffff" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Signal13F S mark">
+  <rect width="64" height="64" fill="#050505"/>
+  <path d="M50 12H18C13.6 12 10 15.6 10 20V30C10 34.4 13.6 38 18 38H41V44H11V53H46C50.4 53 54 49.4 54 45V35C54 30.6 50.4 27 46 27H23V21H50V12Z" fill="#ffffff"/>
+  <path d="M0 59H64V64H0Z" fill="#f05143"/>
 </svg>

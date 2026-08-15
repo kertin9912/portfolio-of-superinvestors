@@ -11,6 +11,7 @@ export type ManagerDirectoryItem = {
   slug: string;
   displayName: string;
   profileLine: string;
+  category: string;
   searchText: string;
   initials: string;
   available: boolean;
@@ -93,6 +94,7 @@ export function ManagerDirectory({ items }: { items: ManagerDirectoryItem[] }) {
                 <i className={item.available ? styles.online : styles.offline} />
                 {item.available ? "LIVE" : "UNAVAILABLE"}
               </div>
+              <span className={styles.categoryBadge}>{item.category}</span>
               <p>CIK {item.cik}</p>
               <h3>{item.displayName}</h3>
               <span className={styles.profileLine}>{item.profileLine}</span>
