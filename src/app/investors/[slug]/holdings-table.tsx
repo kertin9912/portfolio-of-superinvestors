@@ -1,19 +1,25 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
-import type { PortfolioComparison, PositionChange } from "@/lib/sec";
 import styles from "./page.module.css";
 
-type SoldPosition = PortfolioComparison["sold"][number];
-type Activity = PositionChange["activity"] | SoldPosition["activity"];
-type Row = PositionChange | SoldPosition;
+export type HoldingTableRow = {
+  id: string;
+  issuer: string;
+  value: number;
+  shares: number;
+  weight: number;
+  activity: "NEW" | "ADDED" | "REDUCED" | "UNCHANGED";
+  shareChange: number | null;
+};
+
+type Activity = HoldingTableRow["activity"];
 
 const filters: Array<{ label: string; value: "ALL" | Activity }> = [
   { label: "ALL", value: "ALL" },
   { label: "NEW", value: "NEW" },
   { label: "ADDED", value: "ADDED" },
   { label: "REDUCED", value: "REDUCED" },
-  { label: "SOLD", value: "SOLD" },
   { label: "UNCHANGED", value: "UNCHANGED" },
 ];
 
@@ -32,17 +38,14 @@ function change(value: number | null): string {
   return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
 }
 
-export function HoldingsTable({ positions, sold }: { positions: PositionChange[]; sold: SoldPosition[] }) {
+export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"ALL" | Activity>("ALL");
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
-  const rows = useMemo(() => {
-    const allRows: Row[] = [...positions, ...sold];
-    return allRows.filter((position) => {
-      const haystack = position.issuer.toLowerCase();
-      return haystack.includes(deferredQuery) && (filter === "ALL" || position.activity === filter);
-    });
-  }, [deferredQuery, filter, positions, sold]);
+  const visibleRows = useMemo(() => rows.filter((position) => (
+    position.issuer.toLowerCase().includes(deferredQuery)
+    && (filter === "ALL" || position.activity === filter)
+  )), [deferredQuery, filter, rows]);
 
   return (
     <section className={styles.holdingsSection}>
@@ -58,26 +61,26 @@ export function HoldingsTable({ positions, sold }: { positions: PositionChange[]
         {filters.map((item) => (
           <button className={filter === item.value ? styles.activeFilter : ""} onClick={() => setFilter(item.value)} key={item.value} type="button">{item.label}</button>
         ))}
-        <span>{rows.length} ROWS</span>
+        <span>{visibleRows.length} CURRENT POSITIONS</span>
       </div>
       <div className={styles.tableWrap}>
         <table>
           <thead><tr><th>#</th><th>ISSUER</th><th>WEIGHT</th><th>SHARES / PRN</th><th>DISCLOSED VALUE</th><th>ACTIVITY</th><th>Q/Q SHARES</th></tr></thead>
           <tbody>
-            {rows.map((position, index) => (
-              <tr key={`${position.cusip}:${position.titleOfClass}:${position.activity}`}>
+            {visibleRows.map((position, index) => (
+              <tr key={position.id}>
                 <td>{String(index + 1).padStart(2, "0")}</td>
                 <td><b>{position.issuer}</b></td>
                 <td><div className={styles.weight}><i style={{ width: `${Math.min(position.weight * 3.5, 100)}%` }} /><span>{position.weight.toFixed(2)}%</span></div></td>
                 <td>{number(position.shares)}</td>
                 <td><b>{money(position.value)}</b></td>
-                <td><span className={`${styles.activity} ${styles[position.activity.toLowerCase() as "new" | "added" | "reduced" | "sold" | "unchanged"]}`}>{position.activity}</span></td>
+                <td><span className={`${styles.activity} ${styles[position.activity.toLowerCase() as "new" | "added" | "reduced" | "unchanged"]}`}>{position.activity}</span></td>
                 <td className={(position.shareChange ?? 0) > 0 ? styles.up : (position.shareChange ?? 0) < 0 ? styles.down : ""}>{change(position.shareChange)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {rows.length === 0 ? <p className={styles.empty}>NO MATCHING POSITIONS</p> : null}
+        {visibleRows.length === 0 ? <p className={styles.empty}>NO MATCHING POSITIONS</p> : null}
       </div>
     </section>
   );

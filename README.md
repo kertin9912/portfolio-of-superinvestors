@@ -1,6 +1,6 @@
-# PoS
+# Signal13F
 
-PoS (short for Portfolio of Superinvestors) is a Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
+Signal13F is a Bloomberg-inspired institutional holdings monitor built with Next.js 16 and deployed on Cloudflare Workers. Every displayed portfolio position is parsed from a live SEC EDGAR Form 13F filing; the application contains no mock holdings.
 
 ## Live deployment
 
@@ -8,8 +8,8 @@ PoS (short for Portfolio of Superinvestors) is a Bloomberg-inspired institutiona
 
 ## Routes
 
-- `/` — live reporting-manager dashboard, latest filings, and Berkshire top holdings
-- `/investors/berkshire-hathaway` — current Berkshire portfolio, quarter-over-quarter activity, searchable information table, and original SEC source
+- `/` — live disclosed-value overview for all tracked managers
+- `/investors/[slug]` — manager-specific doughnut chart, quarter-over-quarter activity, searchable holdings table, and original SEC source
 
 ## Tracked managers
 
@@ -29,7 +29,7 @@ The server fetches each manager's official `data.sec.gov/submissions/CIK########
 Set a descriptive SEC user agent with a monitored contact address before production:
 
 ```bash
-SEC_USER_AGENT="PoS admin@example.com"
+SEC_USER_AGENT="Signal13F admin@example.com"
 ```
 
 ## Local development

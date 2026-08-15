@@ -6,13 +6,19 @@ const SEC_DATA = "https://data.sec.gov";
 const REVALIDATE_SECONDS = 60;
 
 export const managers = [
-  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "BERKSHIRE HATHAWAY" },
-  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management" },
-  { slug: "bridgewater-associates", cik: "0001350694", displayName: "Bridgewater Associates" },
-  { slug: "tiger-global", cik: "0001167483", displayName: "TIGER GLOBAL LLC" },
-  { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping - H&H International Investment" },
-  { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu - Himalaya Capital Management" },
+  { slug: "berkshire-hathaway", cik: "0001067983", displayName: "Berkshire Hathaway", profileLine: "Warren E. Buffett · Omaha, Nebraska" },
+  { slug: "pershing-square", cik: "0001336528", displayName: "Pershing Square Capital Management", profileLine: "Bill Ackman · New York, New York" },
+  { slug: "bridgewater-associates", cik: "0001350694", displayName: "Bridgewater Associates", profileLine: "Westport, Connecticut" },
+  { slug: "tiger-global", cik: "0001167483", displayName: "Tiger Global Management", profileLine: "Chase Coleman · New York, New York" },
+  { slug: "hh-international-investment", cik: "0001759760", displayName: "Duan Yongping · H&H International Investment", profileLine: "Duan Yongping · Palo Alto, California" },
+  { slug: "himalaya-capital-management", cik: "0001709323", displayName: "Li Lu · Himalaya Capital Management", profileLine: "Li Lu · Seattle, Washington" },
 ] as const;
+
+export type Manager = (typeof managers)[number];
+
+export function getManagerBySlug(slug: string): Manager | undefined {
+  return managers.find((manager) => manager.slug === slug);
+}
 
 type JsonRecord = Record<string, unknown>;
 
@@ -80,7 +86,7 @@ function secHeaders(): HeadersInit {
   return {
     Accept: "application/json, application/xml, text/xml;q=0.9, */*;q=0.8",
     "Accept-Encoding": "gzip, deflate",
-    "User-Agent": process.env.SEC_USER_AGENT ?? "PoS local-research contact@example.invalid",
+    "User-Agent": process.env.SEC_USER_AGENT ?? "Signal13F local-research contact@example.invalid",
   };
 }
 
