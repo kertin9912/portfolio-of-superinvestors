@@ -42,6 +42,7 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 | Chuck Akre · Akre Capital Management | `0001112520` | `/investors/akre-capital-management` |
 | Daniel Loeb · Third Point LLC | `0001040273` | `/investors/third-point` |
 | Stanley Druckenmiller · Duquesne Family Office | `0001536411` | `/investors/duquesne-family-office` |
+| Peter Thiel · Thiel Macro LLC | `0001562087` | `/investors/thiel-macro` |
 | California Public Employees' Retirement System (CalPERS) | `0000919079` | `/investors/calpers` |
 | Canada Pension Plan Investment Board (CPP Investments) | `0001283718` | `/investors/cpp-investments` |
 | California State Teachers' Retirement System (CalSTRS) | `0001081019` | `/investors/calstrs` |
