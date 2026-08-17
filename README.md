@@ -43,6 +43,10 @@ Many 13F aggregators update slowly, mix filing data with estimates, or obscure t
 | Daniel Loeb · Third Point LLC | `0001040273` | `/investors/third-point` |
 | Stanley Druckenmiller · Duquesne Family Office | `0001536411` | `/investors/duquesne-family-office` |
 | Peter Thiel · Thiel Macro LLC | `0001562087` | `/investors/thiel-macro` |
+| Hillhouse · HHLR Advisors | `0001762304` | `/investors/hhlr-advisors` |
+| Greenwoods Asset Management Hong Kong | `0001848138` | `/investors/greenwoods-asset-management` |
+| Oriental Harbor Investment Master Fund | `0002046333` | `/investors/oriental-harbor` |
+| Perseverance Asset Management International | `0001802695` | `/investors/perseverance-asset-management` |
 | California Public Employees' Retirement System (CalPERS) | `0000919079` | `/investors/calpers` |
 | Canada Pension Plan Investment Board (CPP Investments) | `0001283718` | `/investors/cpp-investments` |
 | California State Teachers' Retirement System (CalSTRS) | `0001081019` | `/investors/calstrs` |
